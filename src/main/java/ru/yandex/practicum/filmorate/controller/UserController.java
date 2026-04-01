@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -14,8 +16,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    Map<Long, User> users = new HashMap<>();
 
     @GetMapping
     public Collection<User> findAll() {
@@ -26,16 +29,16 @@ public class UserController {
     public User create(@RequestBody User user) {
         log.info("Проверка данных на добавление нового пользователя");
         if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
-            log.error("Ошибка в электронной почте пользователя");
+            log.error("Ошибка в электронной почте пользователя: электронная почта не может быть пустой и должна содержать символ @");
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         }
         if (user.getLogin().isEmpty() || user.getLogin().isBlank()) {
-            log.error("Ошибка в логине пользователя");
+            log.error("Ошибка в логине пользователя: логин не может быть пустым и содержать пробелы");
             throw new ValidationException("Логин не может быть пустым и содержать пробелы");
         }
         LocalDate localDate = LocalDate.now();
         if (user.getBirthday().isAfter(localDate)) {
-            log.error("Ошибка в дате рождения пользователя");
+            log.error("Ошибка в дате рождения пользователя: дата рождения не может быть в будущем");
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
         if (user.getName() == null || user.getName().isBlank()) {
@@ -63,12 +66,12 @@ public class UserController {
     public User update(@RequestBody User newUser) {
         log.info("Проверка данных на обновление пользователя");
         if (newUser.getId() == null) {
-            log.error("Ошибка в id пользователя");
+            log.error("Ошибка в id пользователя: id должен быть указан");
             throw new ValidationException("Id должен быть указан");
         }
         if (!users.containsKey(newUser.getId())) {
             log.error("Пользователь с id {} не найден", newUser.getId());
-            throw new ValidationException("Пользователь не найден");
+            throw new ValidationException(String.format("Пользователь с id %d не найден\n", newUser.getId()));
         }
         User oldUser = users.get(newUser.getId());
         if (newUser.getLogin() != null) {

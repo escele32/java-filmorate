@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -13,8 +15,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FilmController {
-    private final Map<Long, Film> films = new HashMap<>();
+    Map<Long, Film> films = new HashMap<>();
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -25,20 +28,20 @@ public class FilmController {
     public Film create(@RequestBody Film film) {
         log.info("Проверка данных на добавление нового фильма");
         if (film.getName().isEmpty()) {
-            log.error("Ошибка в названии фильма");
+            log.error("Ошибка в названии фильма: название не может быть пустым");
             throw new ValidationException("Название не может быть пустым");
         }
         if (film.getDescription().length() > 200) {
-            log.error("Ошибка в описании фильма");
+            log.error("Ошибка в описании фильма: максимальная длина описания — 200 символов");
             throw new ValidationException("Максимальная длина описания — 200 символов");
         }
         if (film.getDuration() <= 0) {
-            log.error("Ошибка в продолжительности фильма");
+            log.error("Ошибка в продолжительности фильма: продолжительность фильма должна быть положительным числом");
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
         LocalDate localDate = LocalDate.of(1895, 12, 28);
         if (film.getReleaseDate().isBefore(localDate)) {
-            log.error("Ошибка в дате релиза фильма");
+            log.error("Ошибка в дате релиза фильма: дата релиза — не раньше 28 декабря 1895 года");
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
         log.info("Данные соответствуют критериям");
@@ -62,12 +65,12 @@ public class FilmController {
     public Film update(@RequestBody Film newFilm) {
         log.info("Проверка данных на обновление фильма");
         if (newFilm.getId() == null) {
-            log.error("Ошибка в id фильма");
+            log.error("Ошибка в id фильма: id должен быть указан");
             throw new ValidationException("Id должен быть указан");
         }
         if (!films.containsKey(newFilm.getId())) {
             log.error("Фильм с id {} не найден", newFilm.getId());
-            throw new ValidationException("Фильм не найден");
+            throw new ValidationException(String.format("Фильм с id %d не найден\n", newFilm.getId()));
         }
         Film oldFilm = films.get(newFilm.getId());
         log.trace("Получение фильма для обновления из списка согласно введённому id");

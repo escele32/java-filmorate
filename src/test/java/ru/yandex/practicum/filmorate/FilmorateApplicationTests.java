@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
@@ -13,10 +15,11 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@FieldDefaults(level = AccessLevel.PRIVATE)
 class FilmorateApplicationTests {
 
-	private static UserController userController = new UserController();
-	private static FilmController filmController = new FilmController();
+	static UserController userController = new UserController();
+	static FilmController filmController = new FilmController();
 
 	@Test
 	void testUserCreate() {
@@ -91,29 +94,29 @@ class FilmorateApplicationTests {
 
 	@Test
 	void testFailUserCreate() {
-		User user = User.builder()
+		User failEmailUser = User.builder()
 				.name("Rafael")
 				.login("Rabbit")
 				.email("asdya.ru")
 				.birthday(LocalDate.of(1999, 5, 11))
 				.build();
-		System.out.println(user);
+		System.out.println(failEmailUser);
 		assertThrows(ValidationException.class, () -> {
-			userController.create(user);
+			userController.create(failEmailUser);
 		});
 	}
 
 	@Test
 	void testFailFilmCreate() {
-		Film film = Film.builder()
+		Film failDurationFilm = Film.builder()
 				.name("Titanic")
 				.description("Приплыли...")
 				.duration(-128)
 				.releaseDate(LocalDate.of(1994, 9, 23))
 				.build();
-		System.out.println(film);
+		System.out.println(failDurationFilm);
 		assertThrows(ValidationException.class, () -> {
-			filmController.create(film);
+			filmController.create(failDurationFilm);
 		});
 	}
 
@@ -126,12 +129,12 @@ class FilmorateApplicationTests {
 				.birthday(LocalDate.of(1999, 5, 11))
 				.build();
 		userController.create(user);
-		User newUser = User.builder()
+		User failIdUser = User.builder()
 				.id(100L)
 				.login("Wolf")
 				.build();
 		assertThrows(ValidationException.class, () -> {
-			userController.update(newUser);
+			userController.update(failIdUser);
 		});
 	}
 
@@ -144,12 +147,12 @@ class FilmorateApplicationTests {
 				.releaseDate(LocalDate.of(1994, 9, 23))
 				.build();
 		filmController.create(film);
-		Film newFilm = Film.builder()
+		Film failIdFilm = Film.builder()
 				.id(200L)
 				.description("Тру-ля-ля!!")
 				.build();
 		assertThrows(ValidationException.class, () -> {
-			filmController.update(newFilm);
+			filmController.update(failIdFilm);
 		});
 	}
 }
