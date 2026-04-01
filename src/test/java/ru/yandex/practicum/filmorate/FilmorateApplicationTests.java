@@ -101,9 +101,10 @@ class FilmorateApplicationTests {
 				.birthday(LocalDate.of(1999, 5, 11))
 				.build();
 		System.out.println(failEmailUser);
-		assertThrows(ValidationException.class, () -> {
-			userController.create(failEmailUser);
-		});
+		ValidationException validationException = assertThrows(ValidationException.class,
+				() -> userController.create(failEmailUser));
+		assertEquals("Электронная почта не может быть пустой и должна содержать символ @",
+				validationException.getMessage());
 	}
 
 	@Test
@@ -115,9 +116,10 @@ class FilmorateApplicationTests {
 				.releaseDate(LocalDate.of(1994, 9, 23))
 				.build();
 		System.out.println(failDurationFilm);
-		assertThrows(ValidationException.class, () -> {
-			filmController.create(failDurationFilm);
-		});
+		ValidationException validationException =  assertThrows(ValidationException.class,
+				() -> filmController.create(failDurationFilm));
+		assertEquals("Продолжительность фильма должна быть положительным числом",
+				validationException.getMessage());
 	}
 
 	@Test
@@ -133,9 +135,10 @@ class FilmorateApplicationTests {
 				.id(100L)
 				.login("Wolf")
 				.build();
-		assertThrows(ValidationException.class, () -> {
-			userController.update(failIdUser);
-		});
+		ValidationException validationException = assertThrows(ValidationException.class,
+				() -> userController.update(failIdUser));
+		assertEquals(String.format("Пользователь с id %d не найден\n", failIdUser.getId()),
+				validationException.getMessage());
 	}
 
 	@Test
@@ -151,8 +154,9 @@ class FilmorateApplicationTests {
 				.id(200L)
 				.description("Тру-ля-ля!!")
 				.build();
-		assertThrows(ValidationException.class, () -> {
-			filmController.update(failIdFilm);
-		});
+		ValidationException validationException = assertThrows(ValidationException.class,
+				() -> filmController.update(failIdFilm));
+		assertEquals(String.format("Фильм с id %d не найден\n", failIdFilm.getId()),
+				validationException.getMessage());
 	}
 }
