@@ -2,95 +2,78 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FilmController {
-    Map<Long, Film> films = new HashMap<>();
+    FilmService filmService;
 
-    @GetMapping
-    public Collection<Film> findAll() {
-        return films.values();
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
-        log.info("Проверка данных на добавление нового фильма");
-        if (film.getName().isEmpty()) {
-            log.error("Ошибка в названии фильма: название не может быть пустым");
-            throw new ValidationException("Название не может быть пустым");
-        }
-        if (film.getDescription().length() > 200) {
-            log.error("Ошибка в описании фильма: максимальная длина описания — 200 символов");
-            throw new ValidationException("Максимальная длина описания — 200 символов");
-        }
-        if (film.getDuration() <= 0) {
-            log.error("Ошибка в продолжительности фильма: продолжительность фильма должна быть положительным числом");
-            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
-        }
-        LocalDate localDate = LocalDate.of(1895, 12, 28);
-        if (film.getReleaseDate().isBefore(localDate)) {
-            log.error("Ошибка в дате релиза фильма: дата релиза — не раньше 28 декабря 1895 года");
-            throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
-        }
-        log.info("Данные соответствуют критериям");
-        film.setId(getNextId());
-        log.info("Фильму присвоено id: {}", film.getId());
-        films.put(film.getId(), film);
-        log.info("Фильм: {} добавлен в список", film);
-        return film;
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film addFilm(@RequestBody Film film) {
+        log.info("Создание фильма: {}", film);
+        return filmService.addFilm(film);
     }
 
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @GetMapping("/{id}")
+    public Optional<Film> getFilmById(@PathVariable("id") Long filmId) {
+        log.info("Получение фильма по id {}", filmId);
+        return filmService.getFilmById(filmId);
     }
 
-    @PutMapping
-    public Film update(@RequestBody Film newFilm) {
-        log.info("Проверка данных на обновление фильма");
-        if (newFilm.getId() == null) {
-            log.error("Ошибка в id фильма: id должен быть указан");
-            throw new ValidationException("Id должен быть указан");
-        }
-        if (!films.containsKey(newFilm.getId())) {
-            log.error("Фильм с id {} не найден", newFilm.getId());
-            throw new ValidationException(String.format("Фильм с id %d не найден\n", newFilm.getId()));
-        }
-        Film oldFilm = films.get(newFilm.getId());
-        log.trace("Получение фильма для обновления из списка согласно введённому id");
-        if (newFilm.getName() != null) {
-            oldFilm.setName(newFilm.getName());
-            log.trace("Обновление названия фильма");
-        }
-        if (newFilm.getDescription() != null) {
-            oldFilm.setDescription(newFilm.getDescription());
-            log.trace("Обновление описания фильма");
-        }
-        if (newFilm.getDuration() != null) {
-            oldFilm.setDuration(newFilm.getDuration());
-            log.trace("Обновление продолжительности фильма");
-        }
-        if (newFilm.getReleaseDate() != null) {
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            log.trace("Обновление даты релиза фильма");
-        }
-        log.info("Данные фильма {} обновлены", oldFilm);
-        return oldFilm;
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getAllFilms() {
+        log.info("Получение всех фильмов");
+        return filmService.getAllFilms();
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable("id") Long filmId) {
+        log.info("Удаление фильма с id {}", filmId);
+        filmService.deleteFilm(filmId);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Long filmId, @PathVariable Long userId) {
+        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
+        filmService.addLike(filmId, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void removeLike(@PathVariable("id") Long filmId, @PathVariable("userId") Long userId) {
+        log.info("Пользователь {} удаляет лайк у фильма {}", userId, filmId);
+        filmService.removeLike(filmId, userId);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
+        log.info("Получение {} самых популярных фильмов", count);
+        return filmService.getPopularFilms(count);
+    }
+
+    @PutMapping("/{id}")
+    public Film updateFilm(@RequestBody Film film, @PathVariable("id") Long filmId) {
+        film.setId(filmId);
+        log.info("Обновление фильма: {}", film);
+        return filmService.updateFilm(film);
+    }
+
 }
