@@ -25,7 +25,8 @@ public class FilmService {
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage; }
+        this.userStorage = userStorage;
+    }
 
     private void validateFilm(Film film) {
         log.debug("Валидация фильма: {}", film);
