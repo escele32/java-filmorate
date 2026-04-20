@@ -54,11 +54,15 @@ public class UserService {
 
     public User updateUser(User user) {
         log.debug("Обновление пользователя: {}", user);
-        if (user.getId() == null || userStorage.getById(user.getId()).isEmpty()) {
-            log.warn("Пользователь не найден для обновления: {}", user);
-            throw new NotFoundException(String.format("Пользователь с id %d не найден\n", user.getId()));
+        if (user.getId() == null) {
+            log.warn("Id пользователя не должен быть пустым");
+            throw new ValidationException("Id пользователя не должен быть пустым");
         }
-        User oldUser = userStorage.getById(user.getId()).get();
+        User oldUser = userStorage.getById(user.getId()).orElseThrow(
+                () -> {
+                    log.warn("Пользователь не найден для обновления: {}", user);
+                    throw new NotFoundException(String.format("Пользователь с id %d не найден\n", user.getId()));
+                });
         if (user.getEmail() != null) {
             if (!user.getEmail().contains("@")) {
                 throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
@@ -66,17 +70,14 @@ public class UserService {
             oldUser.setEmail(user.getEmail());
             log.trace("Обновление электронной почты пользователя");
         }
-
         if (user.getName() != null) {
             oldUser.setName(user.getName());
             log.trace("Обновление имени пользователя");
         }
-
         if (user.getLogin() != null) {
             oldUser.setLogin(user.getLogin());
             log.trace("Обновление логина пользователя");
         }
-
         if (user.getBirthday() != null) {
             oldUser.setBirthday(user.getBirthday());
             log.trace("Обновление дня рождения пользователя");

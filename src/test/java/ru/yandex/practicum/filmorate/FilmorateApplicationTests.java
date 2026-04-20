@@ -82,7 +82,7 @@ class FilmorateApplicationTests {
 				.id(createdUser.getId())
 				.login("Wolf")
 				.build();
-		User updateUser = userController.updateUser(newUser, newUser.getId());
+		User updateUser = userController.updateUser(newUser);
 		assertEquals("Wolf", updateUser.getLogin());
 	}
 
@@ -115,7 +115,7 @@ class FilmorateApplicationTests {
 				.id(createdFilm.getId())
 				.description("Тру-ля-ля!!")
 				.build();
-		Film updateFilm = filmController.updateFilm(newFilm, newFilm.getId());
+		Film updateFilm = filmController.updateFilm(newFilm);
 		assertEquals("Тру-ля-ля!!", updateFilm.getDescription());
 	}
 
@@ -161,7 +161,7 @@ class FilmorateApplicationTests {
 				.login("Wolf")
 				.build();
 		NotFoundException notFoundException = assertThrows(NotFoundException.class,
-				() -> userController.updateUser(failIdUser, failIdUser.getId()));
+				() -> userController.updateUser(failIdUser));
 		assertEquals(String.format("Пользователь с id %d не найден\n", failIdUser.getId()),
 				notFoundException.getMessage());
 	}
@@ -180,8 +180,8 @@ class FilmorateApplicationTests {
 				.description("Тру-ля-ля!!")
 				.build();
 		NotFoundException notFoundException = assertThrows(NotFoundException.class,
-				() -> filmController.updateFilm(failIdFilm, failIdFilm.getId()));
-		assertEquals(String.format("Фильм с id %d не найден\n", failIdFilm.getId()),
+				() -> filmController.updateFilm(failIdFilm));
+		assertEquals(String.format("Фильм с id %d не найден для обновления\n", failIdFilm.getId()),
 				notFoundException.getMessage());
 	}
 

@@ -35,9 +35,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        if (user.getId() == null || !users.containsKey(user.getId())) {
-            System.out.println("Пользователь для обновления не найден");
-        }
         users.put(user.getId(), user);
         return user;
     }
@@ -49,9 +46,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Optional<User> getById(Long id) {
-        if (!users.containsKey(id)) {
-            System.out.printf("Пользователь с id %d не найден\n", id);
-        }
         return Optional.ofNullable(users.get(id));
     }
 

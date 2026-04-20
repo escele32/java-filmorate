@@ -35,9 +35,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Optional<Film> getById(Long filmId) {
-        if (!films.containsKey(filmId)) {
-            System.out.printf("Фильм с id %d не найден\n", filmId);
-        }
         return Optional.ofNullable(films.get(filmId));
     }
 
@@ -52,9 +49,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        if (film.getId() == null || !films.containsKey(film.getId())) {
-            System.out.println("Фильм для обновления не найден");
-        }
         films.put(film.getId(), film);
         return film;
     }
