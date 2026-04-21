@@ -9,12 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.util.ApiPaths;
 
 import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/films")
+@RequestMapping(ApiPaths.FILMS)
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FilmController {
@@ -32,7 +33,7 @@ public class FilmController {
         return filmService.addFilm(film);
     }
 
-    @GetMapping("/{filmId}")
+    @GetMapping(ApiPaths.FILM_ID)
     public Optional<Film> getFilmById(@PathVariable Long filmId) {
         log.info("Получение фильма по id {}", filmId);
         return filmService.getFilmById(filmId);
@@ -44,25 +45,25 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
-    @DeleteMapping("/{filmId}")
+    @DeleteMapping(ApiPaths.FILM_ID)
     public void deleteFilm(@PathVariable Long filmId) {
         log.info("Удаление фильма с id {}", filmId);
         filmService.deleteFilm(filmId);
     }
 
-    @PutMapping("/{filmId}/like/{userId}")
+    @PutMapping(ApiPaths.FILM_ID + ApiPaths.LIKE + ApiPaths.USER_ID)
     public void addLike(@PathVariable Long filmId, @PathVariable Long userId) {
         log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
         filmService.addLike(filmId, userId);
     }
 
-    @DeleteMapping("/{filmId}/like/{userId}")
+    @DeleteMapping(ApiPaths.FILM_ID + ApiPaths.LIKE + ApiPaths.USER_ID)
     public void removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
         log.info("Пользователь {} удаляет лайк у фильма {}", userId, filmId);
         filmService.removeLike(filmId, userId);
     }
 
-    @GetMapping("/popular")
+    @GetMapping(ApiPaths.POPULAR)
     public Collection<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
         log.info("Получение {} самых популярных фильмов", count);
         return filmService.getPopularFilms(count);

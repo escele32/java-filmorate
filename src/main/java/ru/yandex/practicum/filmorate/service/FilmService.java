@@ -15,6 +15,8 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.Collection;
 import java.util.Optional;
 
+import static java.lang.String.format;
+
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -76,7 +78,7 @@ public class FilmService {
         log.info("Удаление фильма с id {}", filmId);
         if (!filmStorage.delete(filmId)) {
             log.warn("Фильм с id {} не найден для удаления", filmId);
-            throw new NotFoundException("Фильм не найден");
+            throw new NotFoundException(format("Фильм с id %d не найден для удаления\n", filmId));
         }
     }
 
@@ -87,17 +89,17 @@ public class FilmService {
         Optional<User> userOptional = userStorage.getById(userId);
         if (userOptional.isEmpty()) {
             log.warn("Пользователь с id {} не найден", userId);
-            throw new NotFoundException("Пользователь не найден");
+            throw new NotFoundException(format("Пользователь с id %d не найден\n", userId));
         }
         Film film = filmStorage.getById(filmId).orElseThrow(
                 () -> {
                     log.warn("Фильм с id {} не найден", filmId);
-                    throw new NotFoundException("Фильм не найден");
+                    throw new NotFoundException(format("Фильм с id %d не найден\n", filmId));
                 });
         log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
         if (film.getLikes().contains(userId)) {
             log.info("Пользователь {} уже поставил лайк фильму {}", userId, filmId);
-            throw new ValidationException("Данный пользователь уже поставил лайк этому фильму");
+            throw new ValidationException(format("Пользователь %d уже поставил лайк фильму %d\n", userId, filmId));
         } else {
             film.getLikes().add(userId);
             filmStorage.update(film);
@@ -111,17 +113,17 @@ public class FilmService {
         Optional<User> userOptional = userStorage.getById(userId);
         if (userOptional.isEmpty()) {
             log.warn("Пользователь с id {} не найден", userId);
-            throw new NotFoundException("Пользователь не найден");
+            throw new NotFoundException(format("Пользователь с id %d не найден\n", userId));
         }
         Film film = filmStorage.getById(filmId).orElseThrow(
                 () -> {
                     log.warn("Фильм с id {} не найден", filmId);
-                    throw new NotFoundException("Фильм не найден");
+                    throw new NotFoundException(format("Фильм с id %d не найден\n", filmId));
                 });
         log.info("Пользователь {} удаляет лайк у фильма {}", userId, filmId);
         if (!film.getLikes().contains(userId)) {
             log.warn("Лайк от пользователя {} у фильма {} не найден", userId, filmId);
-            throw new NotFoundException("Лайк от пользователя не найден");
+            throw new NotFoundException(format("Лайк от пользователя %d у фильма %d не найден\n", userId, filmId));
         } else {
             film.getLikes().remove(userId);
             filmStorage.update(film);
@@ -145,8 +147,7 @@ public class FilmService {
         Film oldFilm = filmStorage.getById(film.getId()).orElseThrow(
                 () -> {
                     log.warn("Фильм не найден для обновления: {}", film);
-                    throw new NotFoundException(String.format("Фильм с id %d не найден для обновления\n",
-                            film.getId()));
+                    throw new NotFoundException(format("Фильм с id %d не найден для обновления\n", film.getId()));
                 });
         if (film.getName() != null) {
             oldFilm.setName(film.getName());

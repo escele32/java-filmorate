@@ -9,13 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.util.ApiPaths;
 
 import java.util.Collection;
 import java.util.Optional;
 
-
 @RestController
-@RequestMapping("/users")
+@RequestMapping(ApiPaths.USERS)
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
@@ -39,25 +39,25 @@ public class UserController {
         return userService.updateUser(user);
     }
 
-    @PutMapping("/{userId}/friends/{friendId}")
+    @PutMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.FRIEND_ID)
     public void addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
         log.info("Добавление друга: пользователь {} и пользователь {} друзья", userId, friendId);
         userService.addFriend(userId, friendId);
     }
 
-    @DeleteMapping("/{userId}/friends/{friendId}")
+    @DeleteMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.FRIEND_ID)
     public void removeFriend(@PathVariable Long userId, @PathVariable Long friendId) {
         log.info("Удаление друга: пользователь {} и пользователь {} больше не друзья", userId, friendId);
         userService.removeFriend(userId, friendId);
     }
 
-    @GetMapping("/{userId}/friends")
+    @GetMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS)
     public Collection<User> getFriends(@PathVariable Long userId) {
         log.info("Получение друзей пользователя {}", userId);
         return userService.getFriends(userId);
     }
 
-    @GetMapping("/{userId}/friends/common/{otherId}")
+    @GetMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.COMMON_FRIENDS)
     public Collection<User> getCommonFriends(@PathVariable Long userId, @PathVariable Long otherId) {
         log.info("Получение общих друзей: пользователь {} и пользователь {}", userId, otherId);
         return userService.getCommonFriends(userId, otherId);
@@ -69,13 +69,13 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping(ApiPaths.USER_ID)
     public Optional<User> getUserById(@PathVariable Long userId) {
         log.info("Получение пользователя по id {}", userId);
         return userService.getUserById(userId);
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping(ApiPaths.USER_ID)
     public void deleteUser(@PathVariable Long userId) {
         log.info("Удаление пользователя с id {}", userId);
         userService.deleteUser(userId);

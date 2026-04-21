@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.lang.String.format;
+
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -61,7 +63,7 @@ public class UserService {
         User oldUser = userStorage.getById(user.getId()).orElseThrow(
                 () -> {
                     log.warn("Пользователь не найден для обновления: {}", user);
-                    throw new NotFoundException(String.format("Пользователь с id %d не найден\n", user.getId()));
+                    throw new NotFoundException(format("Пользователь с id %d не найден\n", user.getId()));
                 });
         if (user.getEmail() != null) {
             if (!user.getEmail().contains("@")) {
@@ -95,12 +97,12 @@ public class UserService {
         User user = userStorage.getById(userId).orElseThrow(
                 () -> {
                     log.warn("Пользователь c id {} не найден", userId);
-                    throw new NotFoundException("Пользователь не найден");
+                    throw new NotFoundException(format("Пользователь c id %d не найден\n", userId));
                 });
         User friend = userStorage.getById(friendId).orElseThrow(
                 () -> {
                     log.warn("Друг c id {} не найден", friendId);
-                    throw new NotFoundException("Друг не найден");
+                    throw new NotFoundException(format("Друг c id %d не найден\n", friendId));
                 });
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
@@ -116,12 +118,12 @@ public class UserService {
         User user = userStorage.getById(userId).orElseThrow(
                 () -> {
                     log.warn("Пользователь c id {} не найден", userId);
-                    throw new NotFoundException("Пользователь не найден");
+                    throw new NotFoundException(format("Пользователь c id %d не найден\n", userId));
                 });
         User friend = userStorage.getById(friendId).orElseThrow(
                 () -> {
                     log.warn("Друг c id {} не найден", friendId);
-                    throw new NotFoundException("Друг не найден");
+                    throw new NotFoundException(format("Друг c id %d не найден\n", friendId));
                 });
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
@@ -137,7 +139,7 @@ public class UserService {
         User user = userStorage.getById(userId).orElseThrow(
                 () -> {
                     log.warn("Пользователь c id {} не найден", userId);
-                    throw new NotFoundException("Пользователь не найден");
+                    throw new NotFoundException(format("Пользователь c id %d не найден\n", userId));
                 });
         return user.getFriends().stream()
                 .map(id -> userStorage.getById(id).orElse(null))
@@ -153,12 +155,12 @@ public class UserService {
         User user = userStorage.getById(userId).orElseThrow(
                 () -> {
                     log.warn("Пользователь c id {} не найден", userId);
-                    throw new NotFoundException("Пользователь не найден");
+                    throw new NotFoundException(format("Пользователь c id %d не найден\n", userId));
                 });
         User otherUser = userStorage.getById(otherId).orElseThrow(
                 () -> {
                     log.warn("Другой пользователь c id {} не найден", otherId);
-                    throw new NotFoundException("Другой пользователь не найден");
+                    throw new NotFoundException(format("Другой пользователь c id %d не найден\n", otherId));
                 });
         return user.getFriends().stream()
                 .filter(otherUser.getFriends()::contains)
@@ -187,7 +189,7 @@ public class UserService {
         log.info("Удаление пользователя с id {}", userId);
         if (!userStorage.delete(userId)) {
             log.warn("Пользователь с id {} не найден для удаления", userId);
-            throw new NotFoundException("Фильм не найден");
+            throw new NotFoundException(format("Пользователь с id %d не найден для удаления\n", userId));
         }
     }
 
