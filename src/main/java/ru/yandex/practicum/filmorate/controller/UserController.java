@@ -2,95 +2,83 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.util.ApiPaths;
 
-import java.time.LocalDate;
 import java.util.Collection;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(ApiPaths.USERS)
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
-    Map<Long, User> users = new HashMap<>();
+    UserService userService;
 
-    @GetMapping
-    public Collection<User> findAll() {
-        return users.values();
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        log.info("Проверка данных на добавление нового пользователя");
-        if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
-            log.error("Ошибка в электронной почте пользователя: электронная почта не может быть пустой и должна содержать символ @");
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin().isEmpty() || user.getLogin().isBlank()) {
-            log.error("Ошибка в логине пользователя: логин не может быть пустым и содержать пробелы");
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
-        LocalDate localDate = LocalDate.now();
-        if (user.getBirthday().isAfter(localDate)) {
-            log.error("Ошибка в дате рождения пользователя: дата рождения не может быть в будущем");
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            log.trace("Так как поле имени пользователя было пустым, ему присвоено значение логина");
-        }
-        log.info("Данные соответствуют критериям");
-        user.setId(getNextId());
-        log.info("Пользователю присвоено id: {}", user.getId());
-        users.put(user.getId(), user);
-        log.info("Пользователь: {} добавлен в список", user);
-        return user;
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @ResponseStatus(HttpStatus.CREATED)
+    public User createUser(@RequestBody User user) {
+        log.info("Создание пользователя: {}", user);
+        return userService.addUser(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
-        log.info("Проверка данных на обновление пользователя");
-        if (newUser.getId() == null) {
-            log.error("Ошибка в id пользователя: id должен быть указан");
-            throw new ValidationException("Id должен быть указан");
-        }
-        if (!users.containsKey(newUser.getId())) {
-            log.error("Пользователь с id {} не найден", newUser.getId());
-            throw new ValidationException(String.format("Пользователь с id %d не найден\n", newUser.getId()));
-        }
-        User oldUser = users.get(newUser.getId());
-        if (newUser.getLogin() != null) {
-            oldUser.setLogin(newUser.getLogin());
-            log.trace("Обновление логина пользователя");
-        }
-        if (newUser.getEmail() != null) {
-            oldUser.setEmail(newUser.getEmail());
-            log.trace("Обновление электронной почты пользователя");
-        }
-        if (newUser.getBirthday() != null) {
-            oldUser.setBirthday(newUser.getBirthday());
-            log.trace("Обновление дня рождения пользователя");
-        }
-        if (newUser.getName() != null) {
-            oldUser.setName(newUser.getName());
-            log.trace("Обновление имени пользователя");
-        }
-        log.info("Данные пользователя {} обновлены", oldUser);
-        return oldUser;
+    public User updateUser(@RequestBody User user) {
+        log.info("Обновление пользователя: {}", user);
+        return userService.updateUser(user);
     }
+
+    @PutMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.FRIEND_ID)
+    public void addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+        log.info("Добавление друга: пользователь {} и пользователь {} друзья", userId, friendId);
+        userService.addFriend(userId, friendId);
+    }
+
+    @DeleteMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.FRIEND_ID)
+    public void removeFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+        log.info("Удаление друга: пользователь {} и пользователь {} больше не друзья", userId, friendId);
+        userService.removeFriend(userId, friendId);
+    }
+
+    @GetMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS)
+    public Collection<User> getFriends(@PathVariable Long userId) {
+        log.info("Получение друзей пользователя {}", userId);
+        return userService.getFriends(userId);
+    }
+
+    @GetMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.COMMON_FRIENDS)
+    public Collection<User> getCommonFriends(@PathVariable Long userId, @PathVariable Long otherId) {
+        log.info("Получение общих друзей: пользователь {} и пользователь {}", userId, otherId);
+        return userService.getCommonFriends(userId, otherId);
+    }
+
+    @GetMapping
+    public Collection<User> getAllUsers() {
+        log.info("Получение всех пользователей");
+        return userService.getAllUsers();
+    }
+
+    @GetMapping(ApiPaths.USER_ID)
+    public Optional<User> getUserById(@PathVariable Long userId) {
+        log.info("Получение пользователя по id {}", userId);
+        return userService.getUserById(userId);
+    }
+
+    @DeleteMapping(ApiPaths.USER_ID)
+    public void deleteUser(@PathVariable Long userId) {
+        log.info("Удаление пользователя с id {}", userId);
+        userService.deleteUser(userId);
+    }
+
 }
