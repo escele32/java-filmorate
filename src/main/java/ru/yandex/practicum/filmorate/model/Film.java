@@ -21,5 +21,7 @@ public class Film {
     String description;
     LocalDate releaseDate;
     Integer duration;
+    Genre genre;
+    MPA mpa;
     final Set<Long> likes = new HashSet<>();
 }

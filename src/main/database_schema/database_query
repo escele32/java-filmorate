@@ -4,46 +4,57 @@ users:
     FROM users;
 
     #получение пользователя по логину
-    SELECT name, email, birthday
+    SELECT 
+      name, 
+      email, 
+      birthday
     FROM users
     WHERE login = '[Логин]';
 
 films:
     #получение списка фильмов с жанром и рейтингом
-    SELECT
-      films.name,
-      genre.name AS genre_name,
-      mpa.name AS mpa_name,
-      films.release_date,
-      films.duration
-    FROM films
-    JOIN genre ON films.FK_genre_id = genre.id
-    JOIN mpa ON films.FK_mpa_id = mpa.id;
+    SELECT 
+      f.title,
+      g.name AS genre_name,
+      m.name AS mpa_name,
+      f.release_date,
+      f.duration
+    FROM films f
+    JOIN film_genre fg ON f.id = fg.film_id
+    JOIN genres g ON fg.genre_id = g.id
+    JOIN mpa m ON f.mpa_id = m.id;
+
 
     #получение фильма по ID с деталями
-    SELECT
-      films.name,
-      genre.name AS genre_name,
-      mpa.name AS mpa_name
-    FROM films
-    JOIN genre ON films.FK_genre_id = genre.id
-    JOIN mpa ON films.FK_mpa_id = mpa.id
-    WHERE films.id = [ID];
+    SELECT 
+      f.title,
+      g.name AS genre_name,
+      m.name AS mpa_name
+    FROM films f
+    JOIN film_genre fg ON f.id = fg.film_id
+    JOIN genres g ON fg.genre_id = g.id
+    JOIN mpa m ON f.mpa_id = m.id
+    WHERE f.id = [ID];
+
 
     #получение списка фильмов определённого жанра
-    SELECT films.name, films.release_date
-    FROM films
-    JOIN genre ON films.FK_genre_id = genre.id
-    WHERE genre.name = '[Название жанра]';
+    SELECT 
+      f.title, 
+      f.release_date
+    FROM films f
+    JOIN film_genre fg ON f.id = fg.film_id
+    JOIN genres g ON fg.genre_id = g.id
+    WHERE g.name = '[Название жанра]';
+
 
 genre:
     #получение списка жанров
     SELECT *
-    FROM genre;
+    FROM genres;
 
     #получение жанра по ID
     SELECT name
-    FROM genre
+    FROM genres
     WHERE id = [ID];
 
 mpa:
@@ -58,55 +69,40 @@ mpa:
 
 likes:
     #получение списка фильмов, которые лайкнул пользователь
-    SELECT
-      films.name,
-      films.release_date
-    FROM likes
-    JOIN films ON likes.FK_film_id = films.id
-    JOIN users ON likes.FK_user_id = users.id
-    WHERE users.id = [ID пользователя];
+    SELECT 
+      f.title, 
+      f.release_date
+    FROM likes l
+    JOIN films f ON l.film_id = f.id
+    WHERE l.user_id = [ID пользователя];
+
 
     #получение количества лайков для каждого фильма
-    SELECT
-      films.name,
-      COUNT(likes.id) AS likes_count
-    FROM likes
-    JOIN films ON likes.FK_film_id = films.id
-    GROUP BY films.id
+    SELECT 
+      f.title, 
+      COUNT(l.id) AS likes_count
+    FROM likes l
+    JOIN films f ON l.film_id = f.id
+    GROUP BY f.id, f.title
     ORDER BY likes_count DESC;
+
 
 firends:
     #получение списка друзей пользователя
-    SELECT
-      users.name,
-      status.name AS friendship_status
-    FROM friends
-    JOIN users ON friends.FK_friend_id = users.id
-    JOIN status ON friends.FK_status_id = status.id
-    WHERE friends.FK_user_id = [ID пользователя];
+    SELECT 
+      u.name, 
+      f.status AS friendship_status
+    FROM friends f
+    JOIN users u ON f.friend_id = u.id
+    WHERE f.user_id = [ID пользователя];
+
 
     #получение пары друзей с определённым статусом
-    SELECT
+    SELECT 
       u1.name AS user_name,
       u2.name AS friend_name,
-      status.name AS friendship_status
-    FROM friends
-    JOIN users u1 ON friends.FK_user_id = u1.id
-    JOIN users u2 ON friends.FK_friend_id = u2.id
-    JOIN status ON friends.FK_status_id = status.id
-    WHERE status.name = '[Статус дружбы]';
-
-status:
-    #получение всех статусы дружбы
-    SELECT *
-    FROM status;
-
-    #получение ID статуса по названию
-    SELECT id
-    FROM status
-    WHERE name = '[Название статуса]';
-
-
-
-
-
+      f.status AS friendship_status
+    FROM friends f
+    JOIN users u1 ON f.user_id = u1.id
+    JOIN users u2 ON f.friend_id = u2.id
+    WHERE f.status = '[Статус дружбы]';
