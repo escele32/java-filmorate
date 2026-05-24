@@ -26,23 +26,23 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Optional<Mpa> getMpaById(Long mpaId) {
-        String sql = "SELECT * FROM mpa WHERE id = ?";
-        List<Mpa> mpa = jdbcTemplate.query(sql, mpaRowMapper, mpaId);
+        String sqlGetMpaById = "SELECT * FROM mpa WHERE id = ?";
+        List<Mpa> mpa = jdbcTemplate.query(sqlGetMpaById, mpaRowMapper, mpaId);
         return mpa.stream().findFirst();
     }
 
     @Override
     public List<Mpa> getAllMpa() {
-        String sql = "SELECT * FROM mpa";
-        return jdbcTemplate.query(sql, mpaRowMapper);
+        String sqlGetAllMpa = "SELECT * FROM mpa";
+        return jdbcTemplate.query(sqlGetAllMpa, mpaRowMapper);
     }
 
     @Override
     public Mpa createMpa(Mpa mpa) {
-        String sql = "INSERT INTO mpa (name) VALUES (?)";
+        String sqlCreateMpa = "INSERT INTO mpa (name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(sql, new String[] {"id"});
+            PreparedStatement statement = connection.prepareStatement(sqlCreateMpa, new String[] {"id"});
             statement.setString(1, mpa.getName());
             return statement;
         }, keyHolder);
@@ -53,15 +53,15 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public boolean deleteMpa(Long mpaId) {
-        String sql = "DELETE FROM mpa WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, mpaId);
+        String sqlDeleteMpa = "DELETE FROM mpa WHERE id = ?";
+        int rowsAffected = jdbcTemplate.update(sqlDeleteMpa, mpaId);
         return rowsAffected > 0;
     }
 
     @Override
     public void clear() {
-        String sql = "DELETE FROM mpa";
-        jdbcTemplate.update(sql);
+        String sqlClearTableMpa = "DELETE FROM mpa";
+        jdbcTemplate.update(sqlClearTableMpa);
     }
 
 }

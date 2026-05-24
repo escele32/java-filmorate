@@ -34,28 +34,28 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void loadingLikes(Film film) {
-        String sql = "SELECT user_id FROM likes WHERE film_id = ?";
-        List<Long> likes = jdbcTemplate.queryForList(sql, Long.class, film.getId());
+        String sqlLoadingLikes = "SELECT user_id FROM likes WHERE film_id = ?";
+        List<Long> likes = jdbcTemplate.queryForList(sqlLoadingLikes, Long.class, film.getId());
         film.setLikes(new HashSet<>(likes));
     }
 
     private void loadingMpa(Film film) {
-        String sql = "SELECT id, name FROM mpa WHERE id = (SELECT mpa_id FROM films WHERE id = ?)";
-        List<Mpa> result = jdbcTemplate.query(sql, mpaRowMapper, film.getId());
+        String sqlLoadingMpa = "SELECT id, name FROM mpa WHERE id = (SELECT mpa_id FROM films WHERE id = ?)";
+        List<Mpa> result = jdbcTemplate.query(sqlLoadingMpa, mpaRowMapper, film.getId());
         if (!result.isEmpty()) {
             film.setMpa(result.getFirst());
         }
     }
 
     private void loadingGenres(Film film) {
-        String sql = """
+        String sqlLoadingGenres = """
                 SELECT g.id, g.name
                 FROM genres g
                 JOIN film_genre fg ON g.id = fg.genre_id
                 WHERE fg.film_id = ?
                 ORDER BY g.id
                 """;
-        List<Genre> genres = jdbcTemplate.query(sql, genreRowMapper, film.getId());
+        List<Genre> genres = jdbcTemplate.query(sqlLoadingGenres, genreRowMapper, film.getId());
         film.setGenres((new LinkedHashSet<>(genres)));
     }
 
@@ -85,8 +85,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAllFilms() {
-        String sql = "SELECT * FROM films";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
+        String sqlFindAllFilms = "SELECT * FROM films";
+        List<Film> films = jdbcTemplate.query(sqlFindAllFilms, filmRowMapper);
         films.forEach(film -> {
             loadingMpa(film);
             loadingGenres(film);
@@ -97,10 +97,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film createFilm(Film film) {
-        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?)";
+        String sqlCreateFilm = """
+            INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?)
+            """;
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(sql, new String[] {"id"});
+            PreparedStatement statement = connection.prepareStatement(sqlCreateFilm, new String[] {"id"});
             statement.setString(1, film.getName());
             statement.setString(2, film.getDescription());
             statement.setObject(3, film.getReleaseDate());
@@ -116,10 +118,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> getFilmById(Long filmId) {
-        String sql = "SELECT * FROM films WHERE id = ?";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, filmId);
+        String sqlGetFilmById = "SELECT * FROM films WHERE id = ?";
+        List<Film> films = jdbcTemplate.query(sqlGetFilmById, filmRowMapper, filmId);
         Optional<Film> filmOptional = films.stream().findFirst();
-
         if (filmOptional.isPresent()) {
             Film film = filmOptional.get();
             loadingMpa(film);
@@ -132,7 +133,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getPopularFilms(int count) {
-        String sql = """
+        String sqlGetPopularFilms = """
                 SELECT f.*, COUNT(l.user_id) as likes_count
                 FROM films f
                 LEFT JOIN likes l ON f.id = l.film_id
@@ -140,7 +141,7 @@ public class FilmDbStorage implements FilmStorage {
                 ORDER BY likes_count DESC, f.id ASC
                 LIMIT ?
                 """;
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
+        List<Film> films = jdbcTemplate.query(sqlGetPopularFilms, filmRowMapper, count);
         films.forEach(film -> {
             loadingMpa(film);
             loadingGenres(film);
@@ -151,9 +152,10 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, " +
-                "duration = ?, mpa_id = ? WHERE id = ?";
-        jdbcTemplate.update(sql,
+        String sqlUpdateFilm = """
+            UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE id = ?
+            """;
+        jdbcTemplate.update(sqlUpdateFilm,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
@@ -176,24 +178,24 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(Long filmId, Long userId) {
-        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, userId);
+        String sqlAddLike = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+        jdbcTemplate.update(sqlAddLike, filmId, userId);
     }
 
     @Override
     public void removeLike(Long filmId, Long userId) {
-    String sql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
-    jdbcTemplate.update(sql, filmId, userId);
+    String sqlRemoveLike = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+    jdbcTemplate.update(sqlRemoveLike, filmId, userId);
     }
 
     @Override
     public void clear() {
-        String sqlFilms = "DELETE FROM films";
-        String sqlLikes = "DELETE FROM likes";
-        String sqlFilmGenre = "DELETE FROM film_genre";
-        jdbcTemplate.update(sqlLikes);
-        jdbcTemplate.update(sqlFilmGenre);
-        jdbcTemplate.update(sqlFilms);
+        String sqlClearTableFilms = "DELETE FROM films";
+        String sqlClearTableLikes = "DELETE FROM likes";
+        String sqlClearTableFilmGenre = "DELETE FROM film_genre";
+        jdbcTemplate.update(sqlClearTableLikes);
+        jdbcTemplate.update(sqlClearTableFilmGenre);
+        jdbcTemplate.update(sqlClearTableFilms);
     }
 
 }

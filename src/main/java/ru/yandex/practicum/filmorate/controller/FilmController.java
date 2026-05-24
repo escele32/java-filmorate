@@ -61,13 +61,13 @@ public class FilmController {
 
     @PutMapping(ApiPaths.FILMID_LIKE_USERID)
     public void addLike(@PathVariable Long filmId, @PathVariable Long userId) {
-        log.info("Пользователь{} ставит лайк фильму{}", userId, filmId);
+        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
         filmService.addLike(filmId, userId);
     }
 
     @DeleteMapping(ApiPaths.FILMID_LIKE_USERID)
     public void removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
-        log.info("Пользователь{} удаляет лайк у фильма{}", userId, filmId);
+        log.info("Пользователь {} удаляет лайк у фильма {}", userId, filmId);
         filmService.removeLike(filmId, userId);
     }
 

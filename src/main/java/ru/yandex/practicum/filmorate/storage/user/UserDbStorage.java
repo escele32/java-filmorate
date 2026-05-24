@@ -25,8 +25,8 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void loadingFriends(User user) {
-        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
-        List<Long> friends = jdbcTemplate.queryForList(sql, Long.class, user.getId());
+        String sqlLoadingFriends = "SELECT friend_id FROM friends WHERE user_id = ?";
+        List<Long> friends = jdbcTemplate.queryForList(sqlLoadingFriends, Long.class, user.getId());
         user.setFriends(new HashSet<>(friends));
     }
 
@@ -45,23 +45,23 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> findAllUsers() {
-        String sql = "SELECT * FROM users";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper);
+        String sqlFindAllUsers = "SELECT * FROM users";
+        List<User> users = jdbcTemplate.query(sqlFindAllUsers, userRowMapper);
         users.forEach(this::loadingFriends);
         return users;
     }
 
     @Override
     public User createUser(User user) {
-        String sql = "INSERT INTO users (name, login, email, birthday) VALUES (?, ?, ?, ?)";
+        String sqlCreateUser = "INSERT INTO users (name, login, email, birthday) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"id"});
-            ps.setString(1, user.getName());
-            ps.setString(2, user.getLogin());
-            ps.setString(3, user.getEmail());
-            ps.setObject(4, user.getBirthday());
-            return ps;
+            PreparedStatement statement = connection.prepareStatement(sqlCreateUser, new String[] {"id"});
+            statement.setString(1, user.getName());
+            statement.setString(2, user.getLogin());
+            statement.setString(3, user.getEmail());
+            statement.setObject(4, user.getBirthday());
+            return statement;
         }, keyHolder);
         Long generatedId = keyHolder.getKey().longValue();
         user.setId(generatedId);
@@ -71,8 +71,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        String sql = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE id = ?";
-        jdbcTemplate.update(sql,
+        String sqlUpdateUser = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE id = ?";
+        jdbcTemplate.update(sqlUpdateUser,
                 user.getName(),
                 user.getLogin(),
                 user.getEmail(),
@@ -86,15 +86,15 @@ public class UserDbStorage implements UserStorage {
     public boolean deleteUser(Long userId) {
         String deleteFriendSql = "DELETE FROM friends WHERE user_id = ?";
         jdbcTemplate.update(deleteFriendSql, userId);
-        String sql = "DELETE FROM users WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, userId);
+        String sqlDeleteUser = "DELETE FROM users WHERE id = ?";
+        int rowsAffected = jdbcTemplate.update(sqlDeleteUser, userId);
         return rowsAffected > 0;
     }
 
     @Override
     public Optional<User> getUserById(Long userId) {
-        String sql = "SELECT * FROM users WHERE id = ?";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper, userId);
+        String sqlGetUserById = "SELECT * FROM users WHERE id = ?";
+        List<User> users = jdbcTemplate.query(sqlGetUserById, userRowMapper, userId);
         Optional<User> userOptional = users.stream().findFirst();
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -106,68 +106,69 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherId) {
-        String sql = """
+        String sqlGetCommonFriends = """
                 SELECT u.*
                 FROM users u
                 JOIN friends f1 ON u.id = f1.friend_id AND f1.user_id = ?
                 JOIN friends f2 ON u.id = f2.friend_id AND f2.user_id = ?
                 """;
-        List<User> users = jdbcTemplate.query(sql, userRowMapper, userId, otherId);
+        List<User> users = jdbcTemplate.query(sqlGetCommonFriends, userRowMapper, userId, otherId);
         users.forEach(this::loadingFriends);
         return users;
     }
 
     @Override
     public List<User> getFriends(Long userId) {
-        String sql = """
+        String sqlGetFriends = """
                 SELECT u.*
                 FROM users u
                 JOIN friends f ON u.id = f.friend_id
                 WHERE f.user_id = ?
                 ORDER BY u.id
                 """;
-        return jdbcTemplate.query(sql, userRowMapper, userId);
+        return jdbcTemplate.query(sqlGetFriends, userRowMapper, userId);
     }
 
     @Override
     public boolean addFriend(Long userId, Long otherId, String status) {
-        String sql = "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'NOT_CONFIRMED')";
-        int rowsAffected = jdbcTemplate.update(sql, userId, otherId);
+        String sqlAddFriend = "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'NOT_CONFIRMED')";
+        int rowsAffected = jdbcTemplate.update(sqlAddFriend, userId, otherId);
         return rowsAffected > 0;
     }
 
     @Override
     public boolean removeFriend(Long userId, Long friendId) {
-        String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, userId, friendId);
+        String sqlRemoveFriend = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
+        int rowsAffected = jdbcTemplate.update(sqlRemoveFriend, userId, friendId);
         return rowsAffected > 0;
     }
 
     @Override
     public boolean isFriend(Long userId, Long friendId) {
-        String sql = """
+        String sqlIsFriend = """
             SELECT COUNT(*)
             FROM friends
             WHERE user_id = ? AND friend_id = ?
             """;
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
+        Integer count = jdbcTemplate.queryForObject(sqlIsFriend, Integer.class, userId, friendId);
         return count > 0;
     }
 
     @Override
     public void clear() {
-        String sqlFriends = "DELETE FROM friends";
-        String sqlLikes = "DELETE FROM likes";
-        String sqlUsers = "DELETE FROM users";
-        jdbcTemplate.update(sqlFriends);
-        jdbcTemplate.update(sqlLikes);
-        jdbcTemplate.update(sqlUsers);
+        String sqlClearTableFriends = "DELETE FROM friends";
+        String sqlClearTableLikes = "DELETE FROM likes";
+        String sqlClearTableUsers = "DELETE FROM users";
+        jdbcTemplate.update(sqlClearTableFriends);
+        jdbcTemplate.update(sqlClearTableLikes);
+        jdbcTemplate.update(sqlClearTableUsers);
     }
 
     @Override
     public void updateFriendStatus(Long userId, Long friendId, String status) {
-        String sql = "UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?";
-        jdbcTemplate.update(sql, status == String.valueOf(FriendStatus.CONFIRMED), userId, friendId);
+        String sqlUpdateFriendStatus = "UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sqlUpdateFriendStatus, status == String.valueOf(FriendStatus.CONFIRMED),
+                userId, friendId);
     }
 
 }

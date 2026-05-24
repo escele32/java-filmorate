@@ -28,29 +28,29 @@ public class GenreService {
 
     private void validateGenreByIdIsNull(Long genreId) {
         if (genreId == null) {
-            log.warn("ID genre не может быть null");
-            throw new ValidationException("ID genre не может быть null");
+            log.warn("ID жанра не может быть null");
+            throw new ValidationException("ID жанра не может быть null");
         }
     }
 
     private Genre validateGenreThrow(Genre genre) {
         return genreStorage.getGenreById(genre.getId())
                 .orElseThrow(() -> {
-                    log.warn("Genre c id {} не найден.", genre.getId());
-                    throw new NotFoundException(format("Genre с id %d не найден.\n", genre.getId()));
+                    log.warn("Жанр c id {} не найден.", genre.getId());
+                    throw new NotFoundException(format("Жанр с id %d не найден.\n", genre.getId()));
                 });
     }
 
     private Genre validateGenreIdThrow(Long genreId) {
         return genreStorage.getGenreById(genreId)
                 .orElseThrow(() -> {
-                    log.warn("Genre c id {} не найден.", genreId);
-                    throw  new NotFoundException(format("Genre с id %d не найден.\n", genreId));
+                    log.warn("Жанр c id {} не найден.", genreId);
+                    throw  new NotFoundException(format("Жанр с id %d не найден.\n", genreId));
                 });
     }
 
     public List<Genre> getGenres() {
-        log.info("Получение списка genre.");
+        log.info("Получение списка жанров.");
         return genreStorage.getAllGenre().stream().toList();
     }
 
@@ -63,24 +63,24 @@ public class GenreService {
 
     public Optional<Genre> getGenreById(Long genreId) {
         validateGenreByIdIsNull(genreId);
-        log.info("Получение Genre по id {}", genreId);
+        log.info("Получение жанра по id {}", genreId);
         return Optional.ofNullable(validateGenreIdThrow(genreId));
     }
 
     public Genre createGenre(Genre genre) {
         if (genre.getName() == null || genre.getName().isBlank()) {
-            throw new ValidationException("Название genre должно быть указано.");
+            throw new ValidationException("Название жанра должно быть указано.");
         }
-        log.info("Создание genre.");
+        log.info("Создание жанра.");
         return genreStorage.createGenre(genre);
     }
 
     public void deleteGenre(Long genreId) {
         validateGenreByIdIsNull(genreId);
-        log.info("Удаление genre с id {}.", genreId);
+        log.info("Удаление жанра с id {}.", genreId);
         if (!genreStorage.deleteGenre(genreId)) {
-            log.warn("Genre с id {} не найден для удаления.", genreId);
-            throw new NotFoundException(format("Genre с id %d не найден для удаления\n", genreId));
+            log.warn("Жанр с id {} не найден для удаления.", genreId);
+            throw new NotFoundException(format("Жанр с id %d не найден для удаления\n", genreId));
         }
     }
 

@@ -16,7 +16,7 @@ public interface UserStorage {
 
     boolean deleteUser(Long userId);
 
-    Optional<User> getUserById(Long id);
+    Optional<User> getUserById(Long userId);
 
     List<User> getCommonFriends(Long userId, Long otherId);
 

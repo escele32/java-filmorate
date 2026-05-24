@@ -30,21 +30,21 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Optional<Genre> getGenreById(Long genreId) {
-        String sql = "SELECT * FROM genres WHERE id = ?";
-        List<Genre> genres = jdbcTemplate.query(sql, genreRowMapper, genreId);
+        String sqlGetGenreById = "SELECT * FROM genres WHERE id = ?";
+        List<Genre> genres = jdbcTemplate.query(sqlGetGenreById, genreRowMapper, genreId);
         return genres.stream().findFirst();
     }
 
     @Override
     public Collection<Genre> getAllGenre() {
-        String sql = "SELECT * FROM genres";
-        return jdbcTemplate.query(sql, genreRowMapper);
+        String sqlGetAllGenre = "SELECT * FROM genres";
+        return jdbcTemplate.query(sqlGetAllGenre, genreRowMapper);
     }
 
     @Override
     public Genre updateGenre(Genre genre) {
-        String sql = "UPDATE genres SET name = ? WHERE id = ?";
-        jdbcTemplate.update(sql,
+        String sqlUpdateGenre = "UPDATE genres SET name = ? WHERE id = ?";
+        jdbcTemplate.update(sqlUpdateGenre,
                 genre.getName(),
                 genre.getId()
         );
@@ -53,10 +53,10 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Genre createGenre(Genre genre) {
-        String sql = "INSERT INTO genres (name) VALUES (?)";
+        String sqlCreateGenre = "INSERT INTO genres (name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(sql, new String[] {"id"});
+            PreparedStatement statement = connection.prepareStatement(sqlCreateGenre, new String[] {"id"});
             statement.setString(1, genre.getName());
             return statement;
         }, keyHolder);
@@ -67,15 +67,15 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public boolean deleteGenre(Long genreId) {
-        String sql = "DELETE FROM genres WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, genreId);
+        String sqlDeleteGenre = "DELETE FROM genres WHERE id = ?";
+        int rowsAffected = jdbcTemplate.update(sqlDeleteGenre, genreId);
         return rowsAffected > 0;
     }
 
     @Override
     public void clear() {
-        String sql = "DELETE FROM genres";
-        jdbcTemplate.update(sql);
+        String sqlClearTableGenres = "DELETE FROM genres";
+        jdbcTemplate.update(sqlClearTableGenres);
     }
 
     @Override
@@ -83,10 +83,10 @@ public class GenreDbStorage implements GenreStorage {
         if (genreIds.isEmpty()) {
             return new HashSet<>();
         }
-        String sql = "SELECT id FROM genres WHERE id IN (:genreIds)";
+        String sqlFindAllByIds = "SELECT id FROM genres WHERE id IN (:genreIds)";
         MapSqlParameterSource parameters = new MapSqlParameterSource("genreIds", genreIds);
         List<Long> result = namedJdbcTemplate.query(
-                sql,
+                sqlFindAllByIds,
                 parameters,
                 (resultSet, rowNum) -> resultSet.getLong("id")
         );

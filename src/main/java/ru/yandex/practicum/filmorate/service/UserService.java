@@ -50,10 +50,11 @@ public class UserService {
     }
 
     private User validateUserThrow(User user) {
-        return userStorage.getUserById(user.getId()).orElseThrow(() -> {
-            log.warn("Пользователь c id {} не найден.", user.getId());
-            throw new NotFoundException(format("Пользователь с id %d не найден.\n", user.getId()));
-        });
+        return userStorage.getUserById(user.getId())
+                .orElseThrow(() -> {
+                    log.warn("Пользователь c id {} не найден.", user.getId());
+                    throw new NotFoundException(format("Пользователь с id %d не найден.\n", user.getId()));
+                });
     }
 
     private User validateUserByIdThrow(Long userId) {

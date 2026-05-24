@@ -182,7 +182,7 @@ public class FilmService {
         validatePairByIdsIsNull(filmId, userId);
         validateFilmByIdThrow(filmId);
         validateUserByIdThrow(userId);
-        log.info("Пользователь{} ставит лайк фильму{}", userId, filmId);
+        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
         filmStorage.addLike(filmId, userId);
     }
 
@@ -190,7 +190,7 @@ public class FilmService {
         validatePairByIdsIsNull(filmId, userId);
         validateFilmByIdThrow(filmId);
         validateUserByIdThrow(userId);
-        log.info("Пользователь{} удаляет лайк у фильма{}", userId, filmId);
+        log.info("Пользователь {} удаляет лайк у фильма {}", userId, filmId);
         filmStorage.removeLike(filmId, userId);
     }
 
