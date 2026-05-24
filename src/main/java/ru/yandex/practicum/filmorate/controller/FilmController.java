@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.util.ApiPaths;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -33,46 +33,48 @@ public class FilmController {
         return filmService.addFilm(film);
     }
 
-    @GetMapping(ApiPaths.FILM_ID)
+    @GetMapping(ApiPaths.FILMID)
+    @ResponseStatus(HttpStatus.OK)
     public Optional<Film> getFilmById(@PathVariable Long filmId) {
         log.info("Получение фильма по id {}", filmId);
         return filmService.getFilmById(filmId);
     }
 
     @GetMapping
-    public Collection<Film> getAllFilms() {
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getFilms() {
         log.info("Получение всех фильмов");
-        return filmService.getAllFilms();
+        return filmService.getFilms();
     }
 
-    @DeleteMapping(ApiPaths.FILM_ID)
+    @DeleteMapping(ApiPaths.FILMID)
     public void deleteFilm(@PathVariable Long filmId) {
         log.info("Удаление фильма с id {}", filmId);
         filmService.deleteFilm(filmId);
-    }
-
-    @PutMapping(ApiPaths.FILM_ID + ApiPaths.LIKE + ApiPaths.USER_ID)
-    public void addLike(@PathVariable Long filmId, @PathVariable Long userId) {
-        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
-        filmService.addLike(filmId, userId);
-    }
-
-    @DeleteMapping(ApiPaths.FILM_ID + ApiPaths.LIKE + ApiPaths.USER_ID)
-    public void removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
-        log.info("Пользователь {} удаляет лайк у фильма {}", userId, filmId);
-        filmService.removeLike(filmId, userId);
-    }
-
-    @GetMapping(ApiPaths.POPULAR)
-    public Collection<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-        log.info("Получение {} самых популярных фильмов", count);
-        return filmService.getPopularFilms(count);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         log.info("Обновление фильма: {}", film);
         return filmService.updateFilm(film);
+    }
+
+    @PutMapping(ApiPaths.FILMID_LIKE_USERID)
+    public void addLike(@PathVariable Long filmId, @PathVariable Long userId) {
+        log.info("Пользователь{} ставит лайк фильму{}", userId, filmId);
+        filmService.addLike(filmId, userId);
+    }
+
+    @DeleteMapping(ApiPaths.FILMID_LIKE_USERID)
+    public void removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
+        log.info("Пользователь{} удаляет лайк у фильма{}", userId, filmId);
+        filmService.removeLike(filmId, userId);
+    }
+
+    @GetMapping(ApiPaths.POPULAR)
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        log.info("Вывод топ-{} фильмов", count);
+        return filmService.getPopularFilms(count);
     }
 
 }

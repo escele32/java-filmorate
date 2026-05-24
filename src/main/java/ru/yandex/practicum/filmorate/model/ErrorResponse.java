@@ -1,10 +1,10 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.model;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-class ErrorResponse {
+public class ErrorResponse {
     String error;
 
     public ErrorResponse(String error) {
