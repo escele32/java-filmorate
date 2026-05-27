@@ -47,7 +47,7 @@ films:
     WHERE g.name = '[Название жанра]';
 
 
-genre:
+genres:
     #получение списка жанров
     SELECT *
     FROM genres;
@@ -106,3 +106,27 @@ firends:
     JOIN users u1 ON f.user_id = u1.id
     JOIN users u2 ON f.friend_id = u2.id
     WHERE f.status = '[Статус дружбы]';
+
+film_genre:
+    #получение списка жанров для конкретного фильма
+    SELECT
+      g.name AS genre_name
+    FROM film_genre fg
+    JOIN genres g ON fg.genre_id = g.id
+    WHERE fg.film_id = [ID фильма];
+
+    #получение списка фильмов для конкретного жанра
+    SELECT
+        f.name AS film_name
+    FROM film_genre fg
+    JOIN films f ON fg.film_id = f.id
+    WHERE fg.genre_id = [ID жанра];
+
+    #получение списка пар «фильм — жанр»
+    SELECT
+        f.name AS film_name,
+        g.name AS genre_name
+    FROM film_genre fg
+    JOIN films f ON fg.film_id = f.id
+    JOIN genres g ON fg.genre_id = g.id
+    ORDER BY f.name;

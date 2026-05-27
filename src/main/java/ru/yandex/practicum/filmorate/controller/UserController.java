@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.util.ApiPaths;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -30,55 +30,58 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@RequestBody User user) {
         log.info("Создание пользователя: {}", user);
-        return userService.addUser(user);
+        return userService.createUser(user);
     }
 
     @PutMapping
+    @ResponseStatus(HttpStatus.OK)
     public User updateUser(@RequestBody User user) {
         log.info("Обновление пользователя: {}", user);
         return userService.updateUser(user);
     }
 
-    @PutMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.FRIEND_ID)
-    public void addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
-        log.info("Добавление друга: пользователь {} и пользователь {} друзья", userId, friendId);
-        userService.addFriend(userId, friendId);
-    }
-
-    @DeleteMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.FRIEND_ID)
-    public void removeFriend(@PathVariable Long userId, @PathVariable Long friendId) {
-        log.info("Удаление друга: пользователь {} и пользователь {} больше не друзья", userId, friendId);
-        userService.removeFriend(userId, friendId);
-    }
-
-    @GetMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS)
-    public Collection<User> getFriends(@PathVariable Long userId) {
-        log.info("Получение друзей пользователя {}", userId);
-        return userService.getFriends(userId);
-    }
-
-    @GetMapping(ApiPaths.USER_ID + ApiPaths.FRIENDS + ApiPaths.COMMON_FRIENDS)
-    public Collection<User> getCommonFriends(@PathVariable Long userId, @PathVariable Long otherId) {
-        log.info("Получение общих друзей: пользователь {} и пользователь {}", userId, otherId);
-        return userService.getCommonFriends(userId, otherId);
-    }
-
     @GetMapping
-    public Collection<User> getAllUsers() {
+    @ResponseStatus(HttpStatus.OK)
+    public List<User> getAllUsers() {
         log.info("Получение всех пользователей");
-        return userService.getAllUsers();
+        return userService.getUsers();
     }
 
-    @GetMapping(ApiPaths.USER_ID)
+    @GetMapping(ApiPaths.USERID)
+    @ResponseStatus(HttpStatus.OK)
     public Optional<User> getUserById(@PathVariable Long userId) {
         log.info("Получение пользователя по id {}", userId);
         return userService.getUserById(userId);
     }
 
-    @DeleteMapping(ApiPaths.USER_ID)
+    @DeleteMapping(ApiPaths.USERID)
     public void deleteUser(@PathVariable Long userId) {
         log.info("Удаление пользователя с id {}", userId);
         userService.deleteUser(userId);
+    }
+
+    @PutMapping(ApiPaths.USERID_FRIENDS_FRIENDID)
+    public void addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+        log.info("Добавление в друзья от пользователя {} пользователю {}", userId, friendId);
+        userService.addFriend(userId, friendId);
+    }
+
+    @DeleteMapping(ApiPaths.USERID_FRIENDS_FRIENDID)
+    public void removeFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+        log.info("Получен запрос на удаление друга {} у {}", friendId, userId);
+        userService.removeFriend(userId, friendId);
+    }
+
+    @GetMapping(ApiPaths.USERID_FRIENDS)
+    public List<User> getFriends(@PathVariable Long userId) {
+        log.info("Вывод друзей пользователя {}", userId);
+        return userService.getFriends(userId);
+    }
+
+    @GetMapping(ApiPaths.USERID_FRIENDS_COMMON_FRIENDS)
+    public List<User> getCommonFriends(@PathVariable Long userId, @PathVariable Long otherId) {
+        log.info("Поиск общих друзей у пользователя {} и пользователя {}", userId, otherId);
+        return userService.getCommonFriends(userId, otherId);
     }
 
 }
